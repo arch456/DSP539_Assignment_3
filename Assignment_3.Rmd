@@ -1,0 +1,115 @@
+---
+title: "Government Spending"
+author: "Archana Chittoor"
+date: "April 21, 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE }
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE)
+```
+
+## R Markdown
+
+```{r budget}
+library(tidyverse)
+
+## Load the data
+climate_exp <- read_csv('C:/Users/archa/Documents/Archana/DSP_539/assignment_3/climate_spending.csv')
+energy_exp <- read_csv('C:/Users/archa/Documents/Archana/DSP_539/assignment_3/energy_spending.csv') 
+fed_rd <- read_csv('C:/Users/archa/Documents/Archana/DSP_539/assignment_3/fed_r_d_spending.csv') 
+
+## Define a function which converts the amount spent to millions of dollars
+
+convert_to_millions <- function(dfvector){
+  col_in_millions <- round(dfvector/(10^6),digits=3)
+  return(col_in_millions)
+}
+
+## Convert the amount in some of the columns to millions of dollars
+
+gcc_spending_millions <- convert_to_millions(climate_exp$gcc_spending)
+energy_spending_millions <- convert_to_millions(energy_exp$energy_spending)
+fed_rd_millions <- convert_to_millions(fed_rd$rd_budget)
+
+```
+
+
+## Including Plots
+
+The below plot depicts the amount spent (in millions of dollars) as part of climate spending, over a period of 18 years
+
+```{r, echo=FALSE}
+
+# Order the legend
+ordered_legend_clim <- filter(climate_exp,year == max(year)) %>% arrange(desc(gcc_spending)) %>%
+  pull(department)
+ggplot(climate_exp,aes(x = year, gcc_spending_millions, color=department)) +
+  geom_line(size = 1) + scale_color_discrete(breaks = ordered_legend_clim, name = "Department") +
+  labs(title = "Climate Spending over the years",y = "Gcc Spending (in millions)", x  = "Year") +
+  scale_x_continuous(breaks = seq(min(climate_exp$year),max(climate_exp$year),5))
+```
+
+The below plot shows the climate spending for each department in a separate subplot
+
+```{r, echo=FALSE}
+
+ggplot(climate_exp,aes(x = year, y = gcc_spending_millions, color = department)) + 
+  geom_point() + geom_smooth(method = "lm", se = FALSE) + facet_wrap(~department) +
+  theme(legend.position = "none") +
+  labs(title = "Climate Spending per department",y = "Gcc Spending (in millions)", x  = "Year") +
+  scale_x_continuous(breaks = seq(min(climate_exp$year),max(climate_exp$year),5))
+```
+
+The below plot indicates the amount spent (in millions of dollars) as part of energy spending, over a period of 22 years
+
+```{r, echo = FALSE}
+
+ordered_legend_energy <- filter(energy_exp,year == max(year)) %>% arrange(desc(energy_spending)) %>%
+  pull(department)
+ggplot(energy_exp,aes(x = year, energy_spending_millions, color=department)) +
+  geom_line(size = 1) + scale_color_discrete(breaks = ordered_legend_energy, name = "Department") +
+  labs(title = "Energy spending over the years",y = "Energy Spending (in millions)", x  = "Year") +
+  scale_x_continuous(breaks = seq(min(energy_exp$year),max(energy_exp$year),5))
+```
+
+This is a plot that shows the energy spent for each department in a separate subplot
+
+```{r, echo= FALSE}
+ggplot(energy_exp,aes(x = year, y = energy_spending_millions, color = department)) + 
+  geom_point() + geom_smooth(method = "lm", se = FALSE) + facet_wrap(~department) +
+  theme(legend.position = "none") +
+  labs(title = "Energy Spending per department",y = "Gcc Spending (in millions)", x  = "Year") +
+  scale_x_continuous(breaks = seq(min(energy_exp$year),max(energy_exp$year),5))
+```
+
+
+Plot that indicates the R and D budget (in millions of dollars) over a period of 42 years
+
+```{r, echo = FALSE}
+ordered_legend_fedrd <- filter(fed_rd,year == max(year)) %>% arrange(desc(rd_budget)) %>%
+  pull(department)
+ggplot(fed_rd,aes(x = year, y = fed_rd_millions, color=department)) +
+  geom_line(size = 1) + scale_color_discrete(breaks = ordered_legend_fedrd, name = "Department") +
+  labs(title = "Federal R and D Budget",y = "R and D Budget (in millions)", x  = "Year") + 
+  scale_x_continuous(breaks = seq(min(fed_rd$year),max(fed_rd$year),5))
+```
+
+
+Plot to verify whether the rd_budget is related to gdp every year. There does not seem to be any direct relation between the two
+
+```{r, echo=FALSE}
+ggplot(fed_rd, aes(gdp, rd_budget,color = department))+ geom_line(size =1) +
+  labs(title = "GDP vs R and D Budget",y = "R and D Budget", x  = "GDP") 
+
+```
+
+
+Plot to show the gdp increase over the years. As seen in the plot, the gdp has increased linearly over time
+
+```{r, echo=FALSE}
+ggplot(fed_rd, aes(year,gdp)) + geom_line(size=1) + 
+  scale_x_continuous(breaks = seq(min(fed_rd$year),max(fed_rd$year),5)) +
+  labs(title = "GDP over the years",y = "GDP", x  = "Year") 
+  
+```
